@@ -322,7 +322,7 @@ function App() {
                 disabled={cell.completed || isAnimating}
               >
                 {recommendedCellIndex === index && !cell.completed && (
-                  <div className="recommend-badge">NEXT</div>
+                  <div className="recommend-badge">おすすめ</div>
                 )}
                 <div className="cell-inner">
                   <span className="cell-t">{cell.title}</span>
