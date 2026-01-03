@@ -162,6 +162,52 @@ function App() {
 
   const isCellInCompletedLine = (index: number) => completedLines.some((line) => line.includes(index))
 
+  // おすすめのマスを計算
+  const getRecommendedCell = useCallback((): number | null => {
+    // まだ完了していないセルのインデックスを取得
+    const incompleteCellIndices = cells
+      .map((cell, index) => ({ cell, index }))
+      .filter(({ cell }) => !cell.completed)
+      .map(({ index }) => index)
+
+    if (incompleteCellIndices.length === 0) return null
+
+    // 各未完了セルについて、ビンゴ達成にどれだけ近いかをスコアリング
+    const cellScores: { index: number; score: number; canComplete: boolean }[] = incompleteCellIndices.map(cellIndex => {
+      let score = 0
+      let canComplete = false
+
+      bingoLines.forEach(line => {
+        if (!line.includes(cellIndex)) return
+
+        const completedInLine = line.filter(i => cells[i].completed).length
+
+        // このセルを完了すればビンゴ達成（2つ完了済み）
+        if (completedInLine === 2) {
+          canComplete = true
+          score += 100
+        }
+        // 1つ完了済みのライン
+        else if (completedInLine === 1) {
+          score += 10
+        }
+        // 0個完了のライン
+        else {
+          score += 1
+        }
+      })
+
+      return { index: cellIndex, score, canComplete }
+    })
+
+    // スコアが高い順にソート（ビンゴ達成可能なセルを優先）
+    cellScores.sort((a, b) => b.score - a.score)
+
+    return cellScores[0]?.index ?? null
+  }, [cells])
+
+  const recommendedCellIndex = getRecommendedCell()
+
   const handleReset = () => {
     setCells(initialCells)
     setCompletedLines([])
@@ -251,10 +297,13 @@ function App() {
             {cells.map((cell, index) => (
               <button
                 key={cell.id}
-                className={`cell ${cell.completed ? 'completed' : ''} ${isCellInCompletedLine(index) ? 'in-line' : ''} ${newlyCompletedCellId === cell.id ? 'animating' : ''} ${cell.id === 5 ? 'free' : ''}`}
+                className={`cell ${cell.completed ? 'completed' : ''} ${isCellInCompletedLine(index) ? 'in-line' : ''} ${newlyCompletedCellId === cell.id ? 'animating' : ''} ${cell.id === 5 ? 'free' : ''} ${recommendedCellIndex === index ? 'recommended' : ''}`}
                 onClick={() => handleCellClick(cell.id)}
                 disabled={cell.completed || isAnimating}
               >
+                {recommendedCellIndex === index && !cell.completed && (
+                  <div className="recommend-badge">NEXT</div>
+                )}
                 <div className="cell-inner">
                   <span className="cell-t">{cell.title}</span>
                   <span className="cell-d">{cell.description}</span>
