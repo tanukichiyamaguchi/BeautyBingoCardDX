@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react'
 import confetti from 'canvas-confetti'
 import './App.css'
 
-// ビンゴマスの定義
 interface BingoCell {
   id: number
   title: string
@@ -10,14 +9,12 @@ interface BingoCell {
   completed: boolean
 }
 
-// 特典の定義
 interface Prize {
   title: string
   description: string
   level: number
 }
 
-// 初期ビンゴマスデータ
 const initialCells: BingoCell[] = [
   { id: 1, title: 'Instagram', description: 'フォロー', completed: false },
   { id: 2, title: 'LINE', description: 'トーク送信', completed: false },
@@ -30,38 +27,21 @@ const initialCells: BingoCell[] = [
   { id: 9, title: 'Survey', description: '回答', completed: false },
 ]
 
-// ビンゴライン（縦・横・斜め）
 const bingoLines = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6],
 ]
 
-// 特典設定
 const prizes: { [key: number]: Prize } = {
-  1: {
-    title: '1 BINGO',
-    description: '次回施術 500円OFF',
-    level: 1,
-  },
-  2: {
-    title: '2 BINGO',
-    description: '眉スタイリング無料 または まつ毛トリートメント無料',
-    level: 2,
-  },
-  3: {
-    title: 'PERFECT',
-    description: '次回施術 1,000円OFF + オリジナルノベルティ',
-    level: 3,
-  },
+  1: { title: '1 BINGO', description: '次回施術 500円OFF', level: 1 },
+  2: { title: '2 BINGO', description: '眉スタイリング無料 または まつ毛トリートメント無料', level: 2 },
+  3: { title: 'PERFECT', description: '次回施術 1,000円OFF + オリジナルノベルティ', level: 3 },
 }
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true)
+  const [introStep, setIntroStep] = useState(0)
   const [cells, setCells] = useState<BingoCell[]>(initialCells)
   const [completedLines, setCompletedLines] = useState<number[][]>([])
   const [showModal, setShowModal] = useState(false)
@@ -69,6 +49,38 @@ function App() {
   const [previousBingoCount, setPreviousBingoCount] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [newlyCompletedCellId, setNewlyCompletedCellId] = useState<number | null>(null)
+
+  // イントロアニメーション
+  useEffect(() => {
+    if (showIntro) {
+      const timer1 = setTimeout(() => setIntroStep(1), 300)
+      const timer2 = setTimeout(() => setIntroStep(2), 800)
+      const timer3 = setTimeout(() => setIntroStep(3), 1300)
+      const timer4 = setTimeout(() => setIntroStep(4), 1800)
+      return () => {
+        clearTimeout(timer1)
+        clearTimeout(timer2)
+        clearTimeout(timer3)
+        clearTimeout(timer4)
+      }
+    }
+  }, [showIntro])
+
+  // イントロ終了時の紙吹雪
+  const fireIntroConfetti = useCallback(() => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#C9A962', '#E8D5A3', '#FFFFFF', '#FFF8E7'],
+      zIndex: 10000,
+    })
+  }, [])
+
+  const handleStartClick = () => {
+    fireIntroConfetti()
+    setTimeout(() => setShowIntro(false), 500)
+  }
 
   const countBingos = useCallback((cellsToCheck: BingoCell[]) => {
     let count = 0
@@ -86,88 +98,32 @@ function App() {
     const duration = 3000
     const animationEnd = Date.now() + duration
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 }
-
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
 
     const interval = setInterval(() => {
       const timeLeft = animationEnd - Date.now()
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval)
-      }
-
+      if (timeLeft <= 0) return clearInterval(interval)
       const particleCount = 50 * (timeLeft / duration)
-
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF', '#FFF8E7', '#E8D5B7'],
-      })
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF', '#FFF8E7', '#E8D5B7'],
-      })
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#C9A962', '#E8D5A3', '#FFFFFF'] })
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#C9A962', '#E8D5A3', '#FFFFFF'] })
     }, 250)
   }, [])
 
   const firePerfectConfetti = useCallback(() => {
     const count = 200
-    const defaults = {
-      origin: { y: 0.7 },
-      zIndex: 10000,
+    const defaults = { origin: { y: 0.7 }, zIndex: 10000 }
+    const fire = (particleRatio: number, opts: confetti.Options) => {
+      confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio), colors: ['#C9A962', '#E8D5A3', '#FFFFFF', '#FFD700'] })
     }
-
-    function fire(particleRatio: number, opts: confetti.Options) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio),
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF', '#FFF8E7', '#E8D5B7'],
-      })
-    }
-
     fire(0.25, { spread: 26, startVelocity: 55 })
     fire(0.2, { spread: 60 })
     fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 })
     fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 })
     fire(0.1, { spread: 120, startVelocity: 45 })
-
-    setTimeout(() => {
-      confetti({
-        particleCount: 150,
-        spread: 180,
-        origin: { y: 0.6 },
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF'],
-        zIndex: 10000,
-      })
-    }, 500)
-
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF', '#FFF8E7'],
-        zIndex: 10000,
-      })
-      confetti({
-        particleCount: 100,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#D4AF37', '#FFD700', '#FFFFFF', '#FFF8E7'],
-        zIndex: 10000,
-      })
-    }, 1000)
   }, [])
 
   const handleCellClick = (id: number) => {
     if (isAnimating) return
-
     const cellIndex = cells.findIndex((c) => c.id === id)
     if (cellIndex === -1 || cells[cellIndex].completed) return
 
@@ -175,9 +131,7 @@ function App() {
     setNewlyCompletedCellId(id)
 
     setTimeout(() => {
-      const newCells = cells.map((cell) =>
-        cell.id === id ? { ...cell, completed: true } : cell
-      )
+      const newCells = cells.map((cell) => cell.id === id ? { ...cell, completed: true } : cell)
       setCells(newCells)
       setNewlyCompletedCellId(null)
 
@@ -196,7 +150,6 @@ function App() {
         setShowModal(true)
         setPreviousBingoCount(newCount)
       }
-
       setIsAnimating(false)
     }, 600)
   }
@@ -207,9 +160,7 @@ function App() {
     setPreviousBingoCount(count)
   }, [])
 
-  const isCellInCompletedLine = (index: number) => {
-    return completedLines.some((line) => line.includes(index))
-  }
+  const isCellInCompletedLine = (index: number) => completedLines.some((line) => line.includes(index))
 
   const handleReset = () => {
     setCells(initialCells)
@@ -218,100 +169,125 @@ function App() {
     setShowModal(false)
   }
 
+  // イントロ画面
+  if (showIntro) {
+    return (
+      <div className="intro-screen">
+        <div className="intro-bg-pattern"></div>
+        <div className="intro-glow"></div>
+
+        <div className="intro-content">
+          <div className={`intro-line-top ${introStep >= 1 ? 'visible' : ''}`}></div>
+
+          <div className={`intro-badge ${introStep >= 1 ? 'visible' : ''}`}>
+            <span>PREMIUM</span>
+          </div>
+
+          <h1 className={`intro-title ${introStep >= 2 ? 'visible' : ''}`}>
+            <span className="intro-title-beauty">Beauty</span>
+            <span className="intro-title-bingo">Bingo Card</span>
+            <span className="intro-title-dx">DX</span>
+          </h1>
+
+          <p className={`intro-subtitle ${introStep >= 3 ? 'visible' : ''}`}>
+            特別なご来店特典プログラム
+          </p>
+
+          <div className={`intro-features ${introStep >= 3 ? 'visible' : ''}`}>
+            <div className="intro-feature">
+              <div className="feature-number">01</div>
+              <div className="feature-text">ビンゴを揃えて豪華特典GET</div>
+            </div>
+            <div className="intro-feature">
+              <div className="feature-number">02</div>
+              <div className="feature-text">最大1,000円OFF + ノベルティ</div>
+            </div>
+            <div className="intro-feature">
+              <div className="feature-number">03</div>
+              <div className="feature-text">簡単アクションで達成</div>
+            </div>
+          </div>
+
+          <button
+            className={`intro-start-btn ${introStep >= 4 ? 'visible' : ''}`}
+            onClick={handleStartClick}
+          >
+            <span>START</span>
+            <div className="btn-shine"></div>
+          </button>
+
+          <div className={`intro-line-bottom ${introStep >= 1 ? 'visible' : ''}`}></div>
+        </div>
+      </div>
+    )
+  }
+
+  // メイン画面
   return (
     <div className="app">
       <div className="background-pattern"></div>
 
-      <header className="header">
-        <div className="header-line"></div>
-        <h1 className="title">
-          <span className="title-main">Beauty Bingo Card</span>
-          <span className="title-dx">DX</span>
-        </h1>
-        <p className="subtitle">PREMIUM REWARD PROGRAM</p>
-        <div className="header-line"></div>
+      <header className="header-compact">
+        <div className="header-inner">
+          <span className="header-title">Beauty Bingo Card</span>
+          <span className="header-dx">DX</span>
+        </div>
+        <div className="header-status">
+          <div className="status-progress">
+            <span className="sp-label">PROGRESS</span>
+            <div className="sp-bar"><div className="sp-fill" style={{ width: `${(cells.filter((c) => c.completed).length / 9) * 100}%` }}></div></div>
+            <span className="sp-value">{cells.filter((c) => c.completed).length}/9</span>
+          </div>
+          <div className="status-bingo">
+            <span className="sb-label">BINGO</span>
+            <span className="sb-value">{completedLines.length}</span>
+          </div>
+        </div>
       </header>
 
-      <main className="main">
-        <div className="bingo-card">
-          <div className="card-frame">
-            <div className="bingo-grid">
-              {cells.map((cell, index) => (
-                <button
-                  key={cell.id}
-                  className={`bingo-cell ${cell.completed ? 'completed' : ''} ${
-                    isCellInCompletedLine(index) ? 'in-bingo-line' : ''
-                  } ${newlyCompletedCellId === cell.id ? 'animating' : ''} ${
-                    cell.id === 5 ? 'free-cell' : ''
-                  }`}
-                  onClick={() => handleCellClick(cell.id)}
-                  disabled={cell.completed || isAnimating}
-                >
-                  <div className="cell-inner">
-                    <div className="cell-content">
-                      <span className="cell-title">{cell.title}</span>
-                      <span className="cell-divider"></span>
-                      <span className="cell-description">{cell.description}</span>
-                    </div>
-                    {cell.completed && (
-                      <div className="completed-stamp">
-                        <span className="stamp-text">CLEAR</span>
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
+      <main className="main-compact">
+        <div className="bingo-card-compact">
+          <div className="bingo-grid-compact">
+            {cells.map((cell, index) => (
+              <button
+                key={cell.id}
+                className={`cell ${cell.completed ? 'completed' : ''} ${isCellInCompletedLine(index) ? 'in-line' : ''} ${newlyCompletedCellId === cell.id ? 'animating' : ''} ${cell.id === 5 ? 'free' : ''}`}
+                onClick={() => handleCellClick(cell.id)}
+                disabled={cell.completed || isAnimating}
+              >
+                <div className="cell-inner">
+                  <span className="cell-t">{cell.title}</span>
+                  <span className="cell-d">{cell.description}</span>
+                  {cell.completed && <div className="cell-stamp">CLEAR</div>}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rewards-compact">
+          <div className="rewards-header">
+            <span className="rh-line"></span>
+            <span className="rh-title">REWARDS</span>
+            <span className="rh-line"></span>
+          </div>
+          <div className="rewards-grid">
+            <div className={`reward ${completedLines.length >= 1 ? 'achieved' : ''}`}>
+              <span className="r-badge">1 BINGO</span>
+              <span className="r-text">500円OFF</span>
+            </div>
+            <div className={`reward ${completedLines.length >= 2 ? 'achieved' : ''}`}>
+              <span className="r-badge">2 BINGO</span>
+              <span className="r-text">施術無料</span>
+            </div>
+            <div className={`reward perfect ${cells.every((c) => c.completed) ? 'achieved' : ''}`}>
+              <span className="r-badge">PERFECT</span>
+              <span className="r-text">1,000円OFF+特典</span>
             </div>
           </div>
         </div>
 
-        <div className="status-section">
-          <div className="status-item">
-            <span className="status-label">PROGRESS</span>
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${(cells.filter((c) => c.completed).length / 9) * 100}%`,
-                }}
-              ></div>
-            </div>
-            <span className="status-value">
-              {cells.filter((c) => c.completed).length} / 9
-            </span>
-          </div>
-          <div className="status-item bingo-status">
-            <span className="status-label">BINGO</span>
-            <span className="bingo-count">{completedLines.length}</span>
-            <span className="status-unit">LINE</span>
-          </div>
-        </div>
-
-        <section className="rewards-section">
-          <h2 className="rewards-title">
-            <span className="rewards-line"></span>
-            <span>REWARDS</span>
-            <span className="rewards-line"></span>
-          </h2>
-          <div className="rewards-list">
-            <div className={`reward-item ${completedLines.length >= 1 ? 'achieved' : ''}`}>
-              <div className="reward-level">1 BINGO</div>
-              <div className="reward-text">次回施術 500円OFF</div>
-            </div>
-            <div className={`reward-item ${completedLines.length >= 2 ? 'achieved' : ''}`}>
-              <div className="reward-level">2 BINGO</div>
-              <div className="reward-text">眉スタイリング無料 or まつ毛トリートメント無料</div>
-            </div>
-            <div className={`reward-item perfect ${cells.every((c) => c.completed) ? 'achieved' : ''}`}>
-              <div className="reward-level">PERFECT</div>
-              <div className="reward-text">1,000円OFF + 限定ノベルティ</div>
-            </div>
-          </div>
-        </section>
-
-        <button className="reset-button" onClick={handleReset}>
-          RESET
-        </button>
+        <button className="reset-btn" onClick={handleReset}>RESET</button>
       </main>
 
       {showModal && currentPrize && (
@@ -327,12 +303,8 @@ function App() {
               <div className="modal-prize-box">
                 <p className="modal-description">{currentPrize.description}</p>
               </div>
-              <p className="modal-note">
-                スタッフにこの画面をお見せください
-              </p>
-              <button className="modal-button" onClick={() => setShowModal(false)}>
-                CLOSE
-              </button>
+              <p className="modal-note">スタッフにこの画面をお見せください</p>
+              <button className="modal-button" onClick={() => setShowModal(false)}>CLOSE</button>
             </div>
           </div>
         </div>
