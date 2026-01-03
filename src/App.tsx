@@ -44,8 +44,7 @@ function App() {
   const [introStep, setIntroStep] = useState(0)
   const [cells, setCells] = useState<BingoCell[]>(initialCells)
   const [completedLines, setCompletedLines] = useState<number[][]>([])
-  const [showModal, setShowModal] = useState(false)
-  const [currentPrize, setCurrentPrize] = useState<Prize | null>(null)
+  const [showPrizeScreen, setShowPrizeScreen] = useState(false)
   const [previousBingoCount, setPreviousBingoCount] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [newlyCompletedCellId, setNewlyCompletedCellId] = useState<number | null>(null)
@@ -138,20 +137,32 @@ function App() {
       const { count: newCount, completed } = countBingos(newCells)
       setCompletedLines(completed)
 
+      // ビンゴ達成時はエフェクトのみ（モーダルは表示しない）
       if (newCount > previousBingoCount) {
         const allCompleted = newCells.every((cell) => cell.completed)
         if (allCompleted) {
-          setCurrentPrize(prizes[3])
           firePerfectConfetti()
         } else {
-          setCurrentPrize(prizes[Math.min(newCount, 2)])
           fireConfetti()
         }
-        setShowModal(true)
         setPreviousBingoCount(newCount)
       }
       setIsAnimating(false)
     }, 600)
+  }
+
+  // 完了ボタンを押したときの処理
+  const handleComplete = () => {
+    if (completedLines.length > 0) {
+      // 景品画面を表示する前にエフェクト
+      const allCompleted = cells.every((cell) => cell.completed)
+      if (allCompleted) {
+        firePerfectConfetti()
+      } else {
+        fireConfetti()
+      }
+      setShowPrizeScreen(true)
+    }
   }
 
   useEffect(() => {
@@ -212,7 +223,16 @@ function App() {
     setCells(initialCells)
     setCompletedLines([])
     setPreviousBingoCount(0)
-    setShowModal(false)
+    setShowPrizeScreen(false)
+  }
+
+  // 現在の最高景品を取得
+  const getCurrentPrize = (): Prize | null => {
+    const allCompleted = cells.every((cell) => cell.completed)
+    if (allCompleted) return prizes[3]
+    if (completedLines.length >= 2) return prizes[2]
+    if (completedLines.length >= 1) return prizes[1]
+    return null
   }
 
   // イントロ画面
@@ -336,24 +356,62 @@ function App() {
           </div>
         </div>
 
-        <button className="reset-btn" onClick={handleReset}>RESET</button>
+        <button
+          className={`complete-btn ${completedLines.length > 0 ? 'active' : ''}`}
+          onClick={handleComplete}
+          disabled={completedLines.length === 0}
+        >
+          {completedLines.length > 0 ? '景品を確認する' : 'ビンゴを揃えてください'}
+        </button>
       </main>
 
-      {showModal && currentPrize && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-line"></span>
-              <span className="modal-congrats">CONGRATULATIONS</span>
-              <span className="modal-line"></span>
+      {showPrizeScreen && (
+        <div className="prize-screen">
+          <div className="prize-content">
+            <div className="prize-header">
+              <span className="prize-line"></span>
+              <span className="prize-congrats">CONGRATULATIONS</span>
+              <span className="prize-line"></span>
             </div>
-            <div className="modal-content">
-              <h2 className="modal-title">{currentPrize.title}</h2>
-              <div className="modal-prize-box">
-                <p className="modal-description">{currentPrize.description}</p>
+
+            <h2 className="prize-main-title">
+              {cells.every((c) => c.completed) ? 'PERFECT!' : `${completedLines.length} BINGO!`}
+            </h2>
+
+            <div className="prize-card">
+              <div className="prize-label">YOUR REWARD</div>
+              <div className="prize-value">{getCurrentPrize()?.description}</div>
+            </div>
+
+            <div className="prize-all-rewards">
+              <div className="prize-rewards-title">獲得した特典</div>
+              <div className="prize-rewards-list">
+                {completedLines.length >= 1 && (
+                  <div className="prize-reward-item achieved">
+                    <span className="pri-check">✓</span>
+                    <span className="pri-text">500円OFF</span>
+                  </div>
+                )}
+                {completedLines.length >= 2 && (
+                  <div className="prize-reward-item achieved">
+                    <span className="pri-check">✓</span>
+                    <span className="pri-text">施術無料</span>
+                  </div>
+                )}
+                {cells.every((c) => c.completed) && (
+                  <div className="prize-reward-item achieved perfect">
+                    <span className="pri-check">✓</span>
+                    <span className="pri-text">1,000円OFF + ノベルティ</span>
+                  </div>
+                )}
               </div>
-              <p className="modal-note">スタッフにこの画面をお見せください</p>
-              <button className="modal-button" onClick={() => setShowModal(false)}>CLOSE</button>
+            </div>
+
+            <p className="prize-instruction">この画面をスタッフにお見せください</p>
+
+            <div className="prize-buttons">
+              <button className="prize-close-btn" onClick={() => setShowPrizeScreen(false)}>戻る</button>
+              <button className="prize-reset-btn" onClick={handleReset}>リセット</button>
             </div>
           </div>
         </div>

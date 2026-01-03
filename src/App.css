@@ -859,6 +859,301 @@ body {
   box-shadow: 0 6px 20px rgba(201,169,98,0.4);
 }
 
+/* ==================== 完了ボタン ==================== */
+.complete-btn {
+  margin-top: 0.8rem;
+  padding: 1rem 1.5rem;
+  background: var(--beige);
+  border: 1px solid var(--beige-dark);
+  border-radius: 50px;
+  color: var(--text-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  cursor: not-allowed;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+  opacity: 0.6;
+}
+
+.complete-btn.active {
+  background: linear-gradient(180deg, #E8D5A3 0%, #C9A962 40%, #A68B4B 100%);
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  opacity: 1;
+  box-shadow:
+    0 6px 20px rgba(201,169,98,0.4),
+    0 3px 8px rgba(0,0,0,0.1),
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  animation: completeGlow 2s ease-in-out infinite;
+}
+
+@keyframes completeGlow {
+  0%, 100% {
+    box-shadow:
+      0 6px 20px rgba(201,169,98,0.4),
+      0 3px 8px rgba(0,0,0,0.1),
+      inset 0 2px 0 rgba(255,255,255,0.35),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
+  }
+  50% {
+    box-shadow:
+      0 8px 30px rgba(201,169,98,0.55),
+      0 4px 12px rgba(0,0,0,0.12),
+      0 0 20px rgba(201,169,98,0.2),
+      inset 0 2px 0 rgba(255,255,255,0.35),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
+  }
+}
+
+.complete-btn.active:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 30px rgba(201,169,98,0.5),
+    0 5px 15px rgba(0,0,0,0.15),
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.1);
+}
+
+.complete-btn.active:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 3px 10px rgba(201,169,98,0.3),
+    inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ==================== 景品画面 ==================== */
+.prize-screen {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 150% 100% at 50% 0%, rgba(232,213,163,0.3) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 80% at 50% 100%, rgba(201,169,98,0.2) 0%, transparent 40%),
+    linear-gradient(180deg, #FFFFFF 0%, #FFFEF9 30%, #FFF8F0 70%, #FFFEF9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+  animation: prizeIn 0.5s ease;
+  overflow-y: auto;
+}
+
+@keyframes prizeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.prize-content {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow:
+    0 15px 50px rgba(0,0,0,0.12),
+    0 5px 20px rgba(0,0,0,0.08);
+  border: 2px solid var(--gold-light);
+  position: relative;
+  animation: prizeContentIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes prizeContentIn {
+  0% { transform: translateY(30px) scale(0.9); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.prize-content::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 20%;
+  right: 20%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #E8D5A3, #C9A962, #E8D5A3, transparent);
+  border-radius: 0 0 4px 4px;
+}
+
+.prize-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.prize-line {
+  width: 30px;
+  height: 1px;
+  background: var(--gold-gradient);
+}
+
+.prize-congrats {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--gold-dark);
+  letter-spacing: 0.25em;
+}
+
+.prize-main-title {
+  font-size: 2rem;
+  font-weight: 300;
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.05em;
+}
+
+.prize-card {
+  background:
+    linear-gradient(135deg, #FFFEF9 0%, #FFF8E8 50%, #FFFBF0 100%);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 1.2rem 1rem;
+  margin-bottom: 1.2rem;
+  box-shadow:
+    0 4px 15px rgba(201,169,98,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.prize-label {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--gold-dark);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.4rem;
+}
+
+.prize-value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+.prize-all-rewards {
+  background: var(--beige);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.prize-rewards-title {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--text-medium);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.8rem;
+}
+
+.prize-rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.prize-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  background: var(--white);
+  border-radius: 6px;
+  border: 1px solid var(--beige-dark);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.prize-reward-item.achieved {
+  opacity: 1;
+  border-color: var(--gold);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFBF5 100%);
+  box-shadow: 0 2px 8px rgba(201,169,98,0.15);
+}
+
+.pri-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--beige-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  color: var(--text-medium);
+  flex-shrink: 0;
+}
+
+.prize-reward-item.achieved .pri-check {
+  background: linear-gradient(135deg, #C9A962 0%, #A68B4B 100%);
+  color: var(--white);
+  box-shadow: 0 2px 6px rgba(201,169,98,0.4);
+}
+
+.pri-text {
+  font-size: 0.7rem;
+  color: var(--text-dark);
+  text-align: left;
+}
+
+.prize-instruction {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gold-dark);
+  margin-bottom: 1.2rem;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, rgba(201,169,98,0.1) 0%, rgba(232,213,163,0.15) 100%);
+  border-radius: 8px;
+  border: 1px dashed var(--gold);
+}
+
+.prize-buttons {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.prize-close-btn,
+.prize-reset-btn {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border-radius: 25px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.prize-close-btn {
+  background: var(--white);
+  border: 1px solid var(--beige-dark);
+  color: var(--text-medium);
+}
+
+.prize-close-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}
+
+.prize-reset-btn {
+  background: var(--gold-gradient);
+  border: none;
+  color: var(--white);
+  box-shadow: 0 3px 12px rgba(201,169,98,0.3);
+}
+
+.prize-reset-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(201,169,98,0.4);
+}
+
 /* ==================== レスポンシブ ==================== */
 @media (max-height: 700px) {
   .intro-title-beauty { font-size: 2rem; }
@@ -876,6 +1171,11 @@ body {
   .cell-d { font-size: 0.45rem; }
   .rewards-compact { margin-top: 0.5rem; padding: 0.5rem; }
   .reset-btn { margin-top: 0.5rem; padding: 0.5rem; }
+  .complete-btn { margin-top: 0.5rem; padding: 0.7rem 1rem; }
+  .prize-content { padding: 1.5rem 1rem; }
+  .prize-main-title { font-size: 1.6rem; }
+  .prize-card { padding: 0.8rem; }
+  .prize-all-rewards { padding: 0.8rem; }
 }
 
 @media (min-width: 400px) {
